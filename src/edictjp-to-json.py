@@ -35,20 +35,25 @@ def main():
             entry_components = line.strip().split('/')
 
             #k_ele and r_ele's
-            k_and_r = entry_components[0]
+            k_and_r = entry_components[0].strip() #literally strip everything
 
             k_ele = k_and_r[0:k_and_r.find('[')]
-            r_ele = k_and_r[k_and_r.find('[')+1:k_and_r.find(']')]
+
+            #if no '[' or ']' we want [0:] at least
+            #to account for when there is now kanji and only a reading
+            r_ele = k_and_r[k_and_r.find('[')+1:].replace(']', '')
 
             #part of speech, sense, see, translations, etc.
             remaining_parts = entry_components[1:-1]
-            sense   = remaining_parts[0:-2]
+            sense   = remaining_parts[0:-1]
             ent_seq = remaining_parts[-1]
 
             json_entry = '"' + ent_seq + '": {\n'
-            json_entry += '  "k_ele": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip() + '"', k_ele.split(';')) ) + ']' + ',\n'
-            json_entry += '  "r_ele": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip() + '"', r_ele.split(';')) ) + ']' + ',\n'
-            json_entry += '  "sense": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip() + '"', sense) ) + ']\n'
+            #not sure if necessary to replace '"' for k_ele and r_ele
+            #but it probably can't hurt
+            json_entry += '  "k_ele": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip().replace('"', '\\"') + '"', k_ele.split(';') if k_ele else []) ) + ']' + ',\n'
+            json_entry += '  "r_ele": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip().replace('"', '\\"') + '"', r_ele.split(';') if r_ele else []) ) + ']' + ',\n'
+            json_entry += '  "sense": ' + '[' + ','.join( map(lambda elem: '"' + elem.strip().replace('"', '\\"') + '"', sense) ) + ']\n'
             json_entry += '}'
             json_entries.append(json_entry)
 
